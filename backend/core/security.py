@@ -22,9 +22,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""
     return pwd_context.verify(plain_password, hashed_password)
 
-def generate_otp() -> str:
-    """Generate a 6-digit OTP code"""
-    return str(secrets.randbelow(900000) + 100000)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create a JWT access token"""
@@ -103,40 +100,3 @@ async def get_current_gov_admin(current_user: dict = Depends(get_current_user)) 
             detail="Access restricted to government administrators"
         )
     return current_user
-
-async def store_otp(phone_number: str, otp_code: str) -> None:
-    """Store OTP in database with expiry"""
-    expires_at = datetime.utcnow() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
-    
-    # Clean up old OTPs for this phone number
-    await db.execute(
-        "DELETE FROM otp_codes WHERE phone_number = $1",
-        phone_number
-    )
-    
-    # Store new OTP
-    await db.execute(
-        """INSERT INTO otp_codes (phone_number, otp_code, expires_at) 
-           VALUES ($1, $2, $3)""",
-        phone_number, otp_code, expires_at
-    )
-
-async def verify_otp(phone_number: str, otp_code: str) -> bool:
-    """Verify OTP code"""
-    # Find valid OTP
-    otp_record = await db.fetch_one(
-        """SELECT id FROM otp_codes 
-           WHERE phone_number = $1 AND otp_code = $2 
-           AND expires_at > NOW() AND is_used = FALSE""",
-        phone_number, otp_code
-    )
-    
-    if otp_record:
-        # Mark OTP as used
-        await db.execute(
-            "UPDATE otp_codes SET is_used = TRUE WHERE id = $1",
-            otp_record["id"]
-        )
-        return True
-    
-    return False

@@ -15,16 +15,6 @@ CREATE TABLE users (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- OTP storage for farmer authentication
-CREATE TABLE otp_codes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    phone_number VARCHAR(15) NOT NULL,
-    otp_code VARCHAR(6) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    expires_at TIMESTAMPTZ NOT NULL,
-    is_used BOOLEAN DEFAULT FALSE
-);
-
 -- 2. CHC & MACHINE TABLES
 CREATE TABLE chcs (
     chc_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -177,7 +167,6 @@ CREATE INDEX audit_logs_created_at_idx ON audit_logs (created_at);
 
 -- Insert default system configurations
 INSERT INTO system_config (config_key, config_value, description) VALUES
-('otp_expiry_minutes', '5', 'OTP expiry time in minutes'),
 ('max_booking_radius_km', '50', 'Maximum radius for machine booking in kilometers'),
 ('green_credit_rate', '100.0', 'Green credits per successful verification'),
 ('jwt_secret_key', 'your-secret-key-change-this', 'JWT secret key for token generation'),

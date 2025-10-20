@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   db:
-    image: timescale/timescaledb-postgis:latest-pg14
+    image: timescale/timescaledb-postgis:latest-pg13
     container_name: pcip_db
     environment:
       POSTGRES_USER: pcip_user

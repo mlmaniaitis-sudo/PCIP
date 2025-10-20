@@ -22,7 +22,7 @@ import paho.mqtt.client as mqtt
 sys.path.append('.')
 
 from core.config import settings
-from core.database import DatabaseManager
+from core.database import db
 from db.schemas import TelemetryPayload, LocationPoint
 from services.iot_service import iot_service
 
@@ -31,8 +31,8 @@ class MQTTTelemetryListener:
     
     def __init__(self):
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        self.db_manager = DatabaseManager()
         self.running = False
+        self.loop: Optional[asyncio.AbstractEventLoop] = None
         
         # Configure MQTT client
         self.client.on_connect = self.on_connect
@@ -77,8 +77,11 @@ class MQTTTelemetryListener:
             # Add device_id to payload
             payload_dict['device_id'] = device_id
             
-            # Process the telemetry data asynchronously
-            asyncio.create_task(self.process_telemetry(payload_dict))
+            # Process the telemetry data asynchronously on the main event loop
+            if self.loop:
+                asyncio.run_coroutine_threadsafe(self.process_telemetry(payload_dict), self.loop)
+            else:
+                print("⚠️ Event loop not initialized; dropping message")
             
         except json.JSONDecodeError as e:
             print(f"❌ Failed to parse JSON payload: {e}")
@@ -120,8 +123,11 @@ class MQTTTelemetryListener:
     async def start(self):
         """Start the MQTT listener"""
         try:
-            # Connect to database
-            await self.db_manager.connect()
+            # Connect to database (use global db used across services)
+            await db.connect()
+
+            # Capture the running event loop for cross-thread scheduling
+            self.loop = asyncio.get_running_loop()
             
             # Connect to MQTT broker
             self.client.connect(settings.MQTT_BROKER_HOST, settings.MQTT_BROKER_PORT, 60)
@@ -151,7 +157,7 @@ class MQTTTelemetryListener:
         self.client.disconnect()
         
         # Disconnect from database
-        await self.db_manager.disconnect()
+        await db.disconnect()
         
         print("✅ MQTT telemetry listener stopped")
 

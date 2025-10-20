@@ -5,22 +5,22 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import asyncpg
 from core.config import settings
-from core.database import DatabaseManager
+from core.database import db
 
-# Global database manager instance
-db_manager = DatabaseManager()
+# Use shared global database manager instance
+_db = db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle application startup and shutdown"""
     # Startup
-    await db_manager.connect()
+    await _db.connect()
     print("✅ Database connection established")
     
     yield
     
     # Shutdown
-    await db_manager.disconnect()
+    await _db.disconnect()
     print("✅ Database connection closed")
 
 # Create FastAPI app with lifespan events
@@ -40,6 +40,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Routers
+from api import auth
+app.include_router(auth.router)
+
 # Health check endpoint
 @app.get("/")
 async def root():
@@ -49,8 +53,8 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     try:
-        # Test database connection
-        pool = db_manager.get_pool()
+        # Test database connection using shared pool
+        pool = _db.get_pool()
         async with pool.acquire() as conn:
             await conn.fetchval("SELECT 1")
         return {"status": "healthy", "database": "connected"}

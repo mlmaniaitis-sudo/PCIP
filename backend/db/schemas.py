@@ -10,9 +10,9 @@ class BaseSchema(BaseModel):
 
 # User schemas
 class UserBase(BaseSchema):
-    phone_number: str = Field(..., regex=r"^\+?[\d\s\-()]+$")
+    phone_number: str = Field(..., pattern=r"^\+?[\d\s\-()]+$")
     full_name: Optional[str] = None
-    role: str = Field(..., regex=r"^(farmer|chc_staff|gov_admin)$")
+    role: str = Field(..., pattern=r"^(farmer|chc_staff|gov_admin)$")
 
 class UserCreate(UserBase):
     password: Optional[str] = None  # Only for CHC/Gov users
@@ -63,7 +63,7 @@ class MachineCreate(MachineBase):
 
 class MachineUpdate(BaseSchema):
     name: Optional[str] = None
-    status: Optional[str] = Field(None, regex=r"^(offline|idle|running|maintenance)$")
+    status: Optional[str] = Field(None, pattern=r"^(offline|idle|running|maintenance)$")
 
 class MachineResponse(MachineBase):
     machine_id: UUID
@@ -118,7 +118,7 @@ class BookingCreate(BaseSchema):
     requested_time: Optional[datetime] = None
 
 class BookingUpdate(BaseSchema):
-    status: Optional[str] = Field(None, regex=r"^(pending|accepted|rejected|in_progress|completed|cancelled)$")
+    status: Optional[str] = Field(None, pattern=r"^(pending|accepted|rejected|in_progress|completed|cancelled)$")
     scheduled_time: Optional[datetime] = None
     final_amount: Optional[Decimal] = None
     notes: Optional[str] = None

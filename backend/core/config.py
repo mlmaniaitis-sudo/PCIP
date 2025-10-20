@@ -24,14 +24,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-this-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_HOURS: int = 24
-    
-    # OTP settings
-    OTP_EXPIRY_MINUTES: int = 5
-    
+        
     # Twilio settings (for OTP SMS)
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
-    TWILIO_PHONE_NUMBER: Optional[str] = None
+    TWILIO_VERIFY_SERVICE_SID: Optional[str] = None
     
     # MQTT settings
     MQTT_BROKER_HOST: str = "localhost"
