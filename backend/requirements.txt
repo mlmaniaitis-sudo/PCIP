@@ -1,0 +1,32 @@
+# Core FastAPI and ASGI server
+fastapi==0.119.0
+uvicorn==0.38.0
+
+# Database drivers and ORM
+asyncpg==0.30.0
+psycopg2-binary==2.9.11
+sqlalchemy==2.0.44
+
+# Pydantic for data validation
+pydantic==2.12.3
+pydantic-settings==2.7.0
+
+# Authentication and security
+python-jose==3.5.0
+passlib==1.7.4
+python-multipart==0.0.20
+
+# Data processing
+pandas==2.3.3
+
+# IoT and messaging
+paho-mqtt==2.1.0
+
+# Optional dependencies for advanced features
+# Uncomment as needed:
+# twilio  # For OTP SMS
+# google-api-python-client  # For Google Cloud services
+# earthengine-api  # For satellite data
+# xgboost  # For ML predictions
+# scikit-learn  # For ML models
+# websockets  # For WebSocket support (already included with FastAPI)
