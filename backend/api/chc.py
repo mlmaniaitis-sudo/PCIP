@@ -9,8 +9,12 @@ from core.security import get_current_chc_staff
 from db.schemas import CHCCreate, CHCResponse, MachineCreate, MachineResponse, LocationPoint, BookingResponse, BookingUpdate
 
 from websocket.manager import websocket_manager
+from services.credit_service import credit_service
+import logging
 
-router = APIRouter(prefix="/chc", tags=["CHC Management"])
+router = APIRouter(prefix="/chc", tags=["CHC Management"]) 
+
+logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=CHCResponse)
@@ -195,6 +199,7 @@ async def update_booking_status(
     chc_id = chc["chc_id"]
 
     booking = await db.fetch_one("SELECT * FROM bookings WHERE booking_id = $1", booking_id)
+    old_status = booking["status"] if booking else None
     if not booking:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found.")
 
@@ -234,6 +239,14 @@ async def update_booking_status(
         updated = await db.fetch_one(query, *params)
         if not updated:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking update failed.")
+
+        # Award credits if transitioned to completed
+        new_status = updated.get("status")
+        if new_status == "completed" and old_status != "completed":
+            logger.info(f"Booking {booking_id} completed, attempting to award credit...")
+            award_success = await credit_service.award_credit_for_booking(booking_id)
+            if not award_success:
+                logger.error(f"Failed to automatically award credit for completed booking {booking_id}")
 
         farmer_user_id = str(updated["farmer_id"])  # UUID -> str
         notification_message = {

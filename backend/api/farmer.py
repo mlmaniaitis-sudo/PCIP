@@ -17,6 +17,8 @@ from db.schemas import (
     FarmerProfileResponse,
     ParcelCreate,
     ParcelResponse,
+    GreenCreditHistoryItem,
+    FarmerWalletResponse,
 )
 
 
@@ -352,3 +354,44 @@ async def list_my_parcels(
             print(f"⚠️ Error processing parcel {p['parcel_id']} geometry: {e}")
             # Skip or include partial; here we skip malformed geometry
     return response_list
+
+
+@router.get("/credits/my-wallet", response_model=FarmerWalletResponse)
+async def get_my_credit_wallet(current_user: dict = Depends(get_current_farmer)):
+    farmer_id = current_user["user_id"]
+
+    try:
+        balance_res = await db.fetch_one(
+            """
+            SELECT
+                COALESCE(SUM(CASE WHEN status = 'available' THEN amount ELSE 0 END), 0) as available_balance,
+                COALESCE(SUM(amount), 0) as total_earned,
+                COALESCE(SUM(CASE WHEN status = 'redeemed' THEN amount ELSE 0 END), 0) as total_redeemed
+            FROM green_credits
+            WHERE farmer_id = $1
+            """,
+            farmer_id,
+        )
+
+        history_rows = await db.fetch_all(
+            """
+            SELECT credit_id, source_booking_id, amount, status, awarded_on, redeemed_on, notes
+            FROM green_credits
+            WHERE farmer_id = $1
+            ORDER BY awarded_on DESC
+            LIMIT 20
+            """,
+            farmer_id,
+        )
+
+        return FarmerWalletResponse(
+            farmer_id=farmer_id,
+            available_balance=balance_res["available_balance"] if balance_res else Decimal("0.0"),
+            total_earned=balance_res["total_earned"] if balance_res else Decimal("0.0"),
+            total_redeemed=balance_res["total_redeemed"] if balance_res else Decimal("0.0"),
+            recent_history=[GreenCreditHistoryItem(**row) for row in history_rows],
+        )
+
+    except Exception as e:
+        print(f"❌ Error fetching farmer wallet: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not retrieve credit wallet.")

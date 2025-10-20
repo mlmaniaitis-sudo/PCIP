@@ -163,6 +163,23 @@ class GreenCreditResponse(BaseSchema):
     redeemed_on: Optional[datetime] = None
     notes: Optional[str] = None
 
+class GreenCreditHistoryItem(BaseSchema):
+    credit_id: UUID
+    farmer_id: Optional[UUID] = None
+    source_booking_id: Optional[UUID] = None
+    amount: Decimal
+    status: str
+    awarded_on: datetime
+    redeemed_on: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class FarmerWalletResponse(BaseSchema):
+    farmer_id: UUID
+    available_balance: Decimal
+    total_earned: Decimal
+    total_redeemed: Decimal
+    recent_history: List[GreenCreditHistoryItem] = []
+
 # Dashboard schemas
 class CHCDashboardResponse(BaseSchema):
     machines_online: int
