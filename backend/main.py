@@ -41,8 +41,11 @@ app.add_middleware(
 )
 
 # Routers
-from api import auth
+from api import auth, chc, farmer, websockets
 app.include_router(auth.router)
+app.include_router(chc.router)
+app.include_router(farmer.router)
+app.include_router(websockets.router)
 
 # Health check endpoint
 @app.get("/")
