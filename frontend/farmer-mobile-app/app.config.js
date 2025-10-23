@@ -1,4 +1,6 @@
-{
+import 'dotenv/config'
+
+export default {
   "expo": {
     "name": "farmer-mobile-app",
     "slug": "farmer-mobile-app",
@@ -23,7 +25,7 @@
       "package": "com.sihpcip.farmerapp",
       "config":{
         "googleMaps":{
-          "apiKey": ""
+          "apiKey": process.env.GOOGLE_MAPS_API_KEY
         }
       }
     },
