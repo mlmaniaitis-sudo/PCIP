@@ -23,7 +23,7 @@
       "package": "com.sihpcip.farmerapp",
       "config":{
         "googleMaps":{
-          "apiKey": "AIzaSyCuLq3cU2plX9UJLZ3eyQzit87gS_yiliw"
+          "apiKey": ""
         }
       }
     },
