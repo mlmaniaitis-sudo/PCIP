@@ -1,5 +1,6 @@
 // frontend/farmer-mobile-app/app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { LanguageProvider } from '@/context/LanguageContext';
 import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
@@ -34,10 +35,12 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <PaperProvider>
-        <RootLayoutNav />
-      </PaperProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <PaperProvider>
+          <RootLayoutNav />
+        </PaperProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

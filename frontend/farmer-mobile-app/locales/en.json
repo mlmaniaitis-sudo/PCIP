@@ -1,0 +1,95 @@
+{
+  "tabs": {
+    "home": "Home",
+    "bookings": "My Bookings",
+    "wallet": "Wallet",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Find a Machine",
+    "map": "Map",
+    "list": "List",
+    "permissionDenied": "Permission to access location was denied. Please enable it in your settings.",
+    "locationError": "Could not fetch location. Please ensure GPS is enabled.",
+    "fetchError": "Could not fetch available machines. Please try again.",
+    "noMachines": "No available '{machineType}' machines found nearby.",
+    "tryAgain": "Try Again",
+    "voiceCommand": "Voice Command",
+    "voiceCommandComingSoon": "Voice command functionality coming soon!",
+    "status": "Status",
+    "kmAway": "km away",
+    "notAvailable": "N/A"
+  },
+  "login": {
+    "title": "Welcome Farmer",
+    "subtitle": "Enter your 10-digit mobile number",
+    "sendOtp": "Send OTP",
+    "placeholder": "Mobile Number"
+  },
+  "verify": {
+    "title": "Verify OTP",
+    "subtitle": "Enter the 6-digit code sent to",
+    "verifyOtp": "Verify and Log In"
+  },
+  "profile": {
+    "language": "Select Language",
+    "signOut": "Sign Out",
+    "myDetails": "My Details",
+    "loggedInAs": "Logged in as",
+    "userId": "User ID",
+    "role": "Role",
+    "village": "Village",
+    "district": "District",
+    "state": "State",
+    "pmKisanId": "PM-KISAN ID",
+    "myParcels": "My Parcels",
+    "parcelId": "Parcel ID",
+    "crop": "Crop",
+    "area": "Area (ha)",
+    "addParcel": "Add New Parcel",
+    "addParcelPlaceholder": "Parcel drawing/adding feature placeholder."
+  },
+  "bookings": {
+    "title": "My Bookings",
+    "parcelId": "Parcel ID",
+    "status": "Status",
+    "requested": "Requested",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "pending": "Pending",
+    "accepted": "Accepted",
+    "inProgress": "In Progress",
+    "cancelled": "Cancelled",
+    "noBookings": "You have no bookings yet."
+  },
+  "wallet": {
+    "title": "Green Credit Wallet",
+    "balance": "Available Balance",
+    "totalEarned": "Total Earned",
+    "totalRedeemed": "Total Redeemed",
+    "history": "Recent History",
+    "earned": "Credits Earned",
+    "redeemed": "Credits Redeemed",
+    "pending": "Credits Pending",
+    "status": "Status",
+    "available": "Available",
+    "awardedOn": "Awarded",
+    "redeemedOn": "Redeemed",
+    "sourceBooking": "From Booking",
+    "noHistory": "No transaction history yet."
+  },
+  "bookingModal": {
+    "title": "Book Machine",
+    "aboutToBook": "You are about to book a:",
+    "machineId": "Machine ID",
+    "selectParcel": "Select Parcel for this Booking:",
+    "confirmRequest": "Confirm Booking Request",
+    "goBack": "Go Back",
+    "alertConfirmTitle": "Booking Submitted (Mock)",
+    "alertConfirmMessage": "Requesting a {machineType} for Parcel ...{parcelIdShort}. (No actual backend call)",
+    "alertSelectionTitle": "Selection Needed",
+    "alertSelectionMessage": "Please select a parcel.",
+    "alertCancel": "Cancel",
+    "alertOK": "OK"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "tabs": {
+    "home": "होम",
+    "bookings": "मेरी बुकिंग",
+    "wallet": "बटुआ",
+    "profile": "प्रोफ़ाइल"
+  },
+  "home": {
+    "title": "मशीन खोजें",
+    "map": "नक्शा",
+    "list": "सूची",
+    "permissionDenied": "स्थान तक पहुँचने की अनुमति अस्वीकार कर दी गई। कृपया इसे अपनी सेटिंग्स में सक्षम करें।",
+    "locationError": "स्थान प्राप्त नहीं किया जा सका। कृपया सुनिश्चित करें कि GPS सक्षम है।",
+    "fetchError": "उपलब्ध मशीनें प्राप्त नहीं की जा सकीं। कृपया पुन: प्रयास करें।",
+    "noMachines": "आस-पास कोई उपलब्ध '{machineType}' मशीन नहीं मिली।",
+    "tryAgain": "पुन: प्रयास करें",
+    "voiceCommand": "आवाज़ से निर्देश",
+    "voiceCommandComingSoon": "आवाज़ से निर्देश की सुविधा जल्द ही आ रही है!",
+    "status": "स्थिति",
+    "kmAway": "किमी दूर",
+    "notAvailable": "उपलब्ध नहीं"
+  },
+  "login": {
+    "title": "किसान का स्वागत है",
+    "subtitle": "अपना 10 अंकों का मोबाइल नंबर दर्ज करें",
+    "sendOtp": "ओटीपी भेजें",
+    "placeholder": "मोबाइल नंबर"
+  },
+  "verify": {
+    "title": "ओटीपी सत्यापित करें",
+    "subtitle": "भेजा गया 6 अंकों का कोड दर्ज करें",
+    "verifyOtp": "सत्यापित करें और लॉग इन करें"
+  },
+  "profile": {
+    "language": "भाषा चुनें",
+    "signOut": "साइन आउट",
+    "myDetails": "मेरे विवरण",
+    "loggedInAs": "इस रूप में लॉग इन किया गया",
+    "userId": "उपयोगकर्ता आईडी",
+    "role": "भूमिका",
+    "village": "गाँव",
+    "district": "ज़िला",
+    "state": "राज्य",
+    "pmKisanId": "पीएम-किसान आईडी",
+    "myParcels": "मेरे पार्सल",
+    "parcelId": "पार्सल आईडी",
+    "crop": "फ़सल",
+    "area": "क्षेत्रफल (हेक्टेयर)",
+    "addParcel": "नया पार्सल जोड़ें",
+    "addParcelPlaceholder": "पार्सल ड्राइंग/जोड़ने की सुविधा प्लेसहोल्डर।"
+  },
+  "bookings": {
+    "title": "मेरी बुकिंग",
+    "parcelId": "पार्सल आईडी",
+    "status": "स्थिति",
+    "requested": "अनुरोधित",
+    "scheduled": "अनुसूचित",
+    "completed": "पूरा हुआ",
+    "pending": "लंबित",
+    "accepted": "स्वीकृत",
+    "inProgress": "प्रगति में",
+    "cancelled": "रद्द",
+    "noBookings": "आपकी अभी तक कोई बुकिंग नहीं है।"
+  },
+  "wallet": {
+    "title": "ग्रीन क्रेडिट वॉलेट",
+    "balance": "उपलब्ध शेष राशि",
+    "totalEarned": "कुल अर्जित",
+    "totalRedeemed": "कुल भुनाया गया",
+    "history": "हाल का इतिहास",
+    "earned": "क्रेडिट अर्जित",
+    "redeemed": "क्रेडिट भुनाया गया",
+    "pending": "क्रेडिट लंबित",
+    "status": "स्थिति",
+    "available": "उपलब्ध",
+    "awardedOn": "पुरस्कृत",
+    "redeemedOn": "भुनाया गया",
+    "sourceBooking": "बुकिंग से",
+    "noHistory": "अभी तक कोई लेनदेन इतिहास नहीं है।"
+  },
+  "bookingModal": {
+    "title": "मशीन बुक करें",
+    "aboutToBook": "आप बुक करने वाले हैं:",
+    "machineId": "मशीन आईडी",
+    "selectParcel": "इस बुकिंग के लिए पार्सल चुनें:",
+    "confirmRequest": "बुकिंग अनुरोध की पुष्टि करें",
+    "goBack": "वापस जाओ",
+    "alertConfirmTitle": "बुकिंग सबमिट की गई (मॉक)",
+    "alertConfirmMessage": "पार्सल ...{parcelIdShort} के लिए {machineType} का अनुरोध किया जा रहा है। (कोई वास्तविक बैकएंड कॉल नहीं)",
+    "alertSelectionTitle": "चयन आवश्यक",
+    "alertSelectionMessage": "कृपया एक पार्सल चुनें।",
+    "alertCancel": "रद्द करें",
+    "alertOK": "ठीक है"
+  }
+}

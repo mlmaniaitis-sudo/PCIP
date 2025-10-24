@@ -1,30 +1,29 @@
-// frontend/farmer-mobile-app/app/(auth)/login.tsx
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import apiClient from '@/api/client';
+import { useTranslation } from '@/context/LanguageContext'; // 1. Import hook
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation(); // 2. Use hook
 
   const handleSendOTP = async () => {
+    // ... (keep existing logic, including Alert messages - Alert uses native OS language)
     if (!phoneNumber) {
       Alert.alert('Error', 'Please enter your phone number.');
       return;
     }
     setLoading(true);
     try {
-      // Call the backend API
       const response = await apiClient.post('/auth/otp/send', {
         phone_number: phoneNumber,
       });
-
       if (response.data.success) {
         Alert.alert('Success', 'OTP sent to your phone!');
-        // Navigate to the verify screen, passing the phone number
         router.push({
           pathname: '/verify',
           params: { phone_number: phoneNumber },
@@ -42,17 +41,21 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+      {/* 3. Translate UI text */}
       <Text variant="headlineMedium" style={styles.title}>
-        Welcome, Farmer!
+        {t('login.title')} 
+      </Text>
+      <Text variant="bodyMedium" style={styles.subtitle}>
+        {t('login.subtitle')} 
       </Text>
       <TextInput
-        label="Phone Number"
+        // label={t('login.placeholder')} // Label can be translated too
         value={phoneNumber}
         onChangeText={setPhoneNumber}
         keyboardType="phone-pad"
         style={styles.input}
         mode="outlined"
-        placeholder="+91xxxxxxxxxx"
+        placeholder={t('login.placeholder')} // Translate placeholder
       />
       <Button
         mode="contained"
@@ -60,7 +63,7 @@ export default function LoginScreen() {
         loading={loading}
         disabled={loading}
         style={styles.button}>
-        Send OTP
+        {t('login.sendOtp')} 
       </Button>
     </View>
   );
@@ -74,7 +77,12 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
+    marginBottom: 8, // Reduced margin
+  },
+  subtitle: { // Added style for subtitle
+    textAlign: 'center',
     marginBottom: 24,
+    color: '#666', // Slightly muted color
   },
   input: {
     marginBottom: 16,

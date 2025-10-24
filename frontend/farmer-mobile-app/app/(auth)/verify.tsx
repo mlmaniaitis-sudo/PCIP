@@ -1,35 +1,32 @@
-// frontend/farmer-mobile-app/app/(auth)/verify.tsx
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useLocalSearchParams } from 'expo-router';
 import apiClient from '@/api/client';
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext'; 
+import { useTranslation } from '@/context/LanguageContext'; // 1. Import hook
 
 export default function VerifyOTPScreen() {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { phone_number } = useLocalSearchParams<{ phone_number: string }>();
-  const { signIn } = useAuth(); // Get the signIn function from context
+  const { signIn } = useAuth(); 
+  const { t } = useTranslation(); // 2. Use hook
 
   const handleVerifyOTP = async () => {
+    // ... (keep existing logic, including Alert messages)
     if (!otpCode || otpCode.length !== 6) {
       Alert.alert('Error', 'Please enter the 6-digit OTP.');
       return;
     }
     setLoading(true);
     try {
-      // Call the backend API
       const response = await apiClient.post('/auth/otp/verify', {
         phone_number: phone_number,
         otp_code: otpCode,
       });
-
       if (response.data.access_token) {
-        // SUCCESS!
-        // Use the signIn function from context to store token and user
         signIn(response.data.access_token, response.data.user);
-        // The RootLayout will automatically redirect to the (tabs) group
       } else {
         Alert.alert('Error', 'Invalid OTP or an error occurred.');
       }
@@ -46,20 +43,22 @@ export default function VerifyOTPScreen() {
 
   return (
     <View style={styles.container}>
+      {/* 3. Translate UI Text */}
       <Text variant="headlineMedium" style={styles.title}>
-        Enter Verification Code
+        {t('verify.title')} 
       </Text>
       <Text variant="bodyMedium" style={styles.subtitle}>
-        Sent to {phone_number}
+        {t('verify.subtitle')} {phone_number} 
       </Text>
       <TextInput
-        label="OTP Code"
+        // label={t('verify.otpLabel')} // Can add a label key if needed
         value={otpCode}
         onChangeText={setOtpCode}
         keyboardType="number-pad"
         maxLength={6}
         style={styles.input}
         mode="outlined"
+        placeholder="------" // Placeholder for OTP
       />
       <Button
         mode="contained"
@@ -67,7 +66,7 @@ export default function VerifyOTPScreen() {
         loading={loading}
         disabled={loading}
         style={styles.button}>
-        Verify and Log In
+        {t('verify.verifyOtp')} 
       </Button>
     </View>
   );
@@ -86,9 +85,11 @@ const styles = StyleSheet.create({
   subtitle: {
     textAlign: 'center',
     marginBottom: 24,
+    color: '#666', 
   },
   input: {
     marginBottom: 16,
+    textAlign: 'center', // Center OTP input text
   },
   button: {
     paddingVertical: 8,
