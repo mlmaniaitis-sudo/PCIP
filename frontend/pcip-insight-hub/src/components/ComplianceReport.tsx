@@ -1,180 +1,192 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, FileText } from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
+import { Download, FileText, Award, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-// Generate compliance data
-const generateComplianceData = () => {
-  const statuses = ["Verified No Burn", "Burn Detected", "Pending"];
-  const districts = ["Ludhiana", "Patiala", "Amritsar", "Bathinda", "Jalandhar"];
-  const machineTypes = ["Baler", "Mulcher", "Harvester", "Chopper"];
-  const data = [];
+// Mock compliance data
+const complianceData = [
+  { id: 'P1001', farmer: 'Amit Singh', district: 'Ludhiana', area: 5.2, status: 'Verified', awarded: true, credits: 260, date: '2025-10-18', method: 'Satellite + IoT' },
+  { id: 'P1002', farmer: 'Meena Devi', district: 'Patiala', area: 4.8, status: 'Pending', awarded: false, credits: 0, date: '2025-10-19', method: 'Satellite' },
+  { id: 'P1003', farmer: 'Ramesh Kumar', district: 'Amritsar', area: 6.0, status: 'Flagged', awarded: false, credits: 0, date: '2025-10-18', method: 'Manual Review' },
+  { id: 'P1004', farmer: 'Sumit Sharma', district: 'Bathinda', area: 3.6, status: 'Verified', awarded: true, credits: 180, date: '2025-10-15', method: 'Satellite + IoT' },
+  { id: 'P1005', farmer: 'Priya Verma', district: 'Jalandhar', area: 7.2, status: 'Verified', awarded: true, credits: 360, date: '2025-10-17', method: 'Satellite + IoT' },
+  { id: 'P1006', farmer: 'Vikram Yadav', district: 'Chandigarh', area: 2.9, status: 'Pending', awarded: false, credits: 0, date: '2025-10-20', method: 'Satellite' },
+  { id: 'P1007', farmer: 'Sunita Reddy', district: 'Mohali', area: 5.5, status: 'Verified', awarded: true, credits: 275, date: '2025-10-16', method: 'Satellite + IoT' },
+  { id: 'P1008', farmer: 'Arjun Gupta', district: 'Ludhiana', area: 8.1, status: 'Verified', awarded: true, credits: 405, date: '2025-10-14', method: 'Satellite + IoT' },
+];
 
-  for (let i = 1; i <= 25; i++) {
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    data.push({
-      bookingId: `BK${String(i).padStart(5, "0")}`,
-      farmerId: `FM${String(Math.floor(Math.random() * 9999)).padStart(4, "0")}`,
-      parcelId: `PL${String(Math.floor(Math.random() * 9999)).padStart(4, "0")}`,
-      district: districts[Math.floor(Math.random() * districts.length)],
-      machineType: machineTypes[Math.floor(Math.random() * machineTypes.length)],
-      completedDate: new Date(2024, 9, Math.floor(Math.random() * 30) + 1).toISOString(),
-      verificationStatus: status,
-      creditAwarded: status === "Verified No Burn",
-    });
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'Verified':
+      return (
+        <Badge variant="default" className="bg-green-100 text-green-700 border-green-300">
+          <CheckCircle className="inline w-3 h-3 mr-1" />
+          Verified ✓
+        </Badge>
+      );
+    case 'Pending':
+      return (
+        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+          <Clock className="inline w-3 h-3 mr-1" />
+          Pending ⏳
+        </Badge>
+      );
+    case 'Flagged':
+      return (
+        <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">
+          <AlertTriangle className="inline w-3 h-3 mr-1" />
+          Flagged 🚩
+        </Badge>
+      );
+    default:
+      return <Badge>Unknown</Badge>;
   }
-  return data;
 };
 
-const complianceData = generateComplianceData();
+const handleExportCSV = () => {
+  alert('CSV export feature would download compliance-report.csv');
+};
 
-const getStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case "Verified No Burn":
-      return "default";
-    case "Burn Detected":
-      return "destructive";
-    case "Pending":
-      return "secondary";
-    default:
-      return "outline";
-  }
+const handleExportPDF = () => {
+  alert('PDF export feature would generate compliance-report.pdf');
 };
 
 export default function ComplianceReport() {
-  const [filteredData, setFilteredData] = useState(complianceData);
-
-  const handleExportCSV = () => {
-    toast.info("Export CSV functionality not implemented");
-  };
-
-  const handleExportPDF = () => {
-    toast.info("Export PDF functionality not implemented");
-  };
+  const totalVerified = complianceData.filter(d => d.status === 'Verified').length;
+  const totalCredits = complianceData.reduce((sum, d) => sum + d.credits, 0);
+  const totalArea = complianceData.reduce((sum, d) => sum + d.area, 0);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Compliance Report</h2>
-        <p className="text-muted-foreground mt-1">
-          Booking verification status and credit awards
-        </p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Compliance Verification Report</h2>
+          <p className="text-muted-foreground mt-1">
+            Satellite + IoT verified parcels • Automated credit awarding system
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV} className="gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button variant="outline" onClick={handleExportPDF} className="gap-2">
+            <FileText className="w-4 h-4" /> Export PDF
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="space-y-2">
-              <Label htmlFor="filterDistrict">District</Label>
-              <Select>
-                <SelectTrigger id="filterDistrict">
-                  <SelectValue placeholder="All Districts" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Districts</SelectItem>
-                  <SelectItem value="ludhiana">Ludhiana</SelectItem>
-                  <SelectItem value="patiala">Patiala</SelectItem>
-                  <SelectItem value="amritsar">Amritsar</SelectItem>
-                </SelectContent>
-              </Select>
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border-l-4 border-l-green-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Verified Parcels</p>
+                <p className="text-2xl font-bold text-green-600">{totalVerified}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="filterStatus">Status</Label>
-              <Select>
-                <SelectTrigger id="filterStatus">
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="verified">Verified No Burn</SelectItem>
-                  <SelectItem value="burn">Burn Detected</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="filterStartDate">Start Date</Label>
-              <Input id="filterStartDate" type="date" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="filterEndDate">End Date</Label>
-              <Input id="filterEndDate" type="date" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Export Buttons */}
-      <div className="flex gap-3">
-        <Button onClick={handleExportCSV} className="gap-2">
-          <Download className="w-4 h-4" />
-          Export CSV
-        </Button>
-        <Button onClick={handleExportPDF} variant="outline" className="gap-2">
-          <FileText className="w-4 h-4" />
-          Export PDF
-        </Button>
+        <Card className="border-l-4 border-l-blue-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Area</p>
+                <p className="text-2xl font-bold text-blue-600">{totalArea.toFixed(1)} ha</p>
+              </div>
+              <FileText className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Credits Awarded</p>
+                <p className="text-2xl font-bold text-yellow-600">{totalCredits}</p>
+              </div>
+              <Award className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Value</p>
+                <p className="text-2xl font-bold text-purple-600">₹{(totalCredits * 500).toLocaleString()}</p>
+              </div>
+              <Award className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Data Table */}
+      {/* Compliance Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Compliance Records ({filteredData.length} total)</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            Parcel Compliance Details
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Booking ID</TableHead>
-                  <TableHead>Farmer ID</TableHead>
-                  <TableHead>Parcel ID</TableHead>
-                  <TableHead>District</TableHead>
-                  <TableHead>Machine Type</TableHead>
-                  <TableHead>Completed Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Credit</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.map((record) => (
-                  <TableRow key={record.bookingId}>
-                    <TableCell className="font-medium">{record.bookingId}</TableCell>
-                    <TableCell>{record.farmerId}</TableCell>
-                    <TableCell>{record.parcelId}</TableCell>
-                    <TableCell>{record.district}</TableCell>
-                    <TableCell>{record.machineType}</TableCell>
-                    <TableCell>
-                      {format(new Date(record.completedDate), "MMM dd, yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(record.verificationStatus)}>
-                        {record.verificationStatus}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Parcel ID</TableHead>
+                <TableHead>Farmer Name</TableHead>
+                <TableHead>District</TableHead>
+                <TableHead>Area (ha)</TableHead>
+                <TableHead>Verification Method</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Credits Awarded</TableHead>
+                <TableHead>Date Verified</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {complianceData.map((row) => (
+                <TableRow key={row.id} className="hover:bg-gray-50">
+                  <TableCell className="font-mono font-semibold">#{row.id}</TableCell>
+                  <TableCell className="font-medium">{row.farmer}</TableCell>
+                  <TableCell>{row.district}</TableCell>
+                  <TableCell>{row.area} ha</TableCell>
+                  <TableCell>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                      {row.method}
+                    </span>
+                  </TableCell>
+                  <TableCell>{getStatusBadge(row.status)}</TableCell>
+                  <TableCell>
+                    {row.awarded ? (
+                      <Badge variant="default" className="bg-green-100 text-green-700">
+                        <Award className="inline w-3 h-3 mr-1" />
+                        {row.credits} credits
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {record.creditAwarded ? (
-                        <span className="text-success font-medium">Yes</span>
-                      ) : (
-                        <span className="text-muted-foreground">No</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    ) : (
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                        Pending
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{row.date}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

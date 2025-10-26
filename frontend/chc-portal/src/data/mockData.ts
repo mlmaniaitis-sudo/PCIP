@@ -4,7 +4,7 @@ export interface Machine {
   type: 'Baler' | 'Rotavator' | 'Harvester' | 'Tractor';
   status: 'idle' | 'running' | 'offline' | 'maintenance';
   lastSeen: string;
-  location: { lat: number; lon: number };
+  location: { lat: number; lng: number }; // ✅ Changed 'lon' to 'lng' for consistency
 }
 
 export interface Booking {
@@ -25,7 +25,7 @@ export const machines: Machine[] = [
     type: 'Harvester',
     status: 'running',
     lastSeen: new Date().toISOString(),
-    location: { lat: 30.73, lon: 76.77 }
+    location: { lat: 30.7304, lng: 76.7785 } // ✅ Changed lon → lng
   },
   {
     id: 'M002',
@@ -33,7 +33,7 @@ export const machines: Machine[] = [
     type: 'Tractor',
     status: 'idle',
     lastSeen: new Date(Date.now() - 3600000).toISOString(),
-    location: { lat: 30.75, lon: 76.80 }
+    location: { lat: 30.7520, lng: 76.8012 } // ✅ Changed lon → lng
   },
   {
     id: 'M003',
@@ -41,7 +41,7 @@ export const machines: Machine[] = [
     type: 'Rotavator',
     status: 'running',
     lastSeen: new Date().toISOString(),
-    location: { lat: 30.70, lon: 76.75 }
+    location: { lat: 30.7015, lng: 76.7542 } // ✅ Changed lon → lng
   },
   {
     id: 'M004',
@@ -49,7 +49,7 @@ export const machines: Machine[] = [
     type: 'Baler',
     status: 'maintenance',
     lastSeen: new Date(Date.now() - 7200000).toISOString(),
-    location: { lat: 30.78, lon: 76.82 }
+    location: { lat: 30.7823, lng: 76.8234 } // ✅ Changed lon → lng
   },
   {
     id: 'M005',
@@ -57,7 +57,23 @@ export const machines: Machine[] = [
     type: 'Tractor',
     status: 'offline',
     lastSeen: new Date(Date.now() - 86400000).toISOString(),
-    location: { lat: 30.68, lon: 76.73 }
+    location: { lat: 30.6845, lng: 76.7312 } // ✅ Changed lon → lng
+  },
+  {
+    id: 'M006',
+    name: 'Harvester Zeta',
+    type: 'Harvester',
+    status: 'idle',
+    lastSeen: new Date(Date.now() - 1800000).toISOString(),
+    location: { lat: 30.7689, lng: 76.7923 }
+  },
+  {
+    id: 'M007',
+    name: 'Baler Theta',
+    type: 'Baler',
+    status: 'running',
+    lastSeen: new Date().toISOString(),
+    location: { lat: 30.7156, lng: 76.7678 }
   }
 ];
 
@@ -69,7 +85,7 @@ export const bookings: Booking[] = [
     parcelArea: 5.5,
     machineType: 'Harvester',
     status: 'pending',
-    requestedTime: new Date(Date.now() + 3600000).toISOString()
+    requestedTime: new Date(Date.now() - 300000).toISOString() // 5 min ago
   },
   {
     id: 'B002',
@@ -78,8 +94,8 @@ export const bookings: Booking[] = [
     parcelArea: 3.2,
     machineType: 'Tractor',
     status: 'accepted',
-    requestedTime: new Date(Date.now() + 7200000).toISOString(),
-    scheduledTime: new Date(Date.now() + 7200000).toISOString()
+    requestedTime: new Date(Date.now() - 1800000).toISOString(), // 30 min ago
+    scheduledTime: new Date(Date.now() + 3600000).toISOString() // 1 hour from now
   },
   {
     id: 'B003',
@@ -88,8 +104,8 @@ export const bookings: Booking[] = [
     parcelArea: 8.0,
     machineType: 'Rotavator',
     status: 'in_progress',
-    requestedTime: new Date().toISOString(),
-    scheduledTime: new Date().toISOString()
+    requestedTime: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+    scheduledTime: new Date(Date.now() - 3600000).toISOString() // 1 hour ago (started)
   },
   {
     id: 'B004',
@@ -98,8 +114,8 @@ export const bookings: Booking[] = [
     parcelArea: 4.5,
     machineType: 'Baler',
     status: 'completed',
-    requestedTime: new Date(Date.now() - 3600000).toISOString(),
-    scheduledTime: new Date(Date.now() - 3600000).toISOString()
+    requestedTime: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    scheduledTime: new Date(Date.now() - 82800000).toISOString() // 23 hours ago
   },
   {
     id: 'B005',
@@ -108,7 +124,7 @@ export const bookings: Booking[] = [
     parcelArea: 6.8,
     machineType: 'Harvester',
     status: 'pending',
-    requestedTime: new Date(Date.now() + 10800000).toISOString()
+    requestedTime: new Date(Date.now() - 600000).toISOString() // 10 min ago
   },
   {
     id: 'B006',
@@ -117,7 +133,7 @@ export const bookings: Booking[] = [
     parcelArea: 2.5,
     machineType: 'Tractor',
     status: 'cancelled',
-    requestedTime: new Date(Date.now() - 7200000).toISOString()
+    requestedTime: new Date(Date.now() - 172800000).toISOString() // 2 days ago
   },
   {
     id: 'B007',
@@ -126,8 +142,8 @@ export const bookings: Booking[] = [
     parcelArea: 7.2,
     machineType: 'Rotavator',
     status: 'accepted',
-    requestedTime: new Date(Date.now() + 14400000).toISOString(),
-    scheduledTime: new Date(Date.now() + 14400000).toISOString()
+    requestedTime: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+    scheduledTime: new Date(Date.now() + 7200000).toISOString() // 2 hours from now
   },
   {
     id: 'B008',
@@ -136,8 +152,8 @@ export const bookings: Booking[] = [
     parcelArea: 5.0,
     machineType: 'Baler',
     status: 'completed',
-    requestedTime: new Date(Date.now() - 10800000).toISOString(),
-    scheduledTime: new Date(Date.now() - 10800000).toISOString()
+    requestedTime: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
+    scheduledTime: new Date(Date.now() - 39600000).toISOString() // 11 hours ago
   },
   {
     id: 'B009',
@@ -146,8 +162,8 @@ export const bookings: Booking[] = [
     parcelArea: 9.5,
     machineType: 'Harvester',
     status: 'in_progress',
-    requestedTime: new Date().toISOString(),
-    scheduledTime: new Date().toISOString()
+    requestedTime: new Date(Date.now() - 10800000).toISOString(), // 3 hours ago
+    scheduledTime: new Date(Date.now() - 5400000).toISOString() // 1.5 hours ago (started)
   },
   {
     id: 'B010',
@@ -156,6 +172,6 @@ export const bookings: Booking[] = [
     parcelArea: 4.0,
     machineType: 'Tractor',
     status: 'pending',
-    requestedTime: new Date(Date.now() + 21600000).toISOString()
+    requestedTime: new Date(Date.now() - 120000).toISOString() // 2 min ago
   }
 ];

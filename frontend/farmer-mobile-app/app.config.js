@@ -15,7 +15,7 @@ export default {
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#E8F5E9",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -41,9 +41,9 @@ export default {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#E8F5E9",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#1B5E20"
           }
         }
       ],

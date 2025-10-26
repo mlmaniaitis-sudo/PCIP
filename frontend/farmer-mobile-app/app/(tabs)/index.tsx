@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Alert, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native';
-import { ThemedView } from '@/components/themed-view';
+// frontend/farmer-mobile-app/app/(tabs)/index.tsx
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, Chip, FAB, IconButton, Text, SegmentedButtons } from 'react-native-paper';
-import * as Location from 'expo-location';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-// REMOVE: import apiClient from '@/api/client';
-import { Link, useRouter } from 'expo-router';
+import { ThemedView } from '@/components/themed-view';
+import { MOCK_MACHINES } from '@/constants/mockData';
+import { useTranslation } from '@/context/LanguageContext';
+import { Machine } from '@/types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Machine } from '@/types'; // Import our new type
+import * as Location from 'expo-location';
+import { Link, useRouter } from 'expo-router';
+import * as Speech from 'expo-speech';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Button, Card, Chip, FAB, Modal, Portal, SegmentedButtons, Text } from 'react-native-paper';
 
-import { useTranslation } from '@/context/LanguageContext'; // 1. ADD THIS
-import { MOCK_MACHINES } from '@/constants/mockData'; // 2. ADD THIS
-
-// Example machine types, you can fetch these from an API later
 const MACHINE_TYPES = ['Baler', 'Rotavator', 'Harvester', 'Tractor'];
 
 export default function HomeScreen() {
@@ -23,8 +22,10 @@ export default function HomeScreen() {
   const [selectedMachineType, setSelectedMachineType] = useState(MACHINE_TYPES[0]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [isListening, setIsListening] = useState(false);
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
   const router = useRouter();
-  const { t } = useTranslation(); // 3. ADD THIS
+  const { t } = useTranslation();
 
   // --- Location Permission and Fetching ---
   const getLocation = useCallback(async () => {
@@ -32,29 +33,27 @@ export default function HomeScreen() {
     setErrorMsg(null);
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      const msg = t('home.permissionDenied'); // 4. TRANSLATE
+      const msg = t('home.permissionDenied');
       setErrorMsg(msg);
-      Alert.alert(t('tabs.profile'), msg); // Use a translated title
+      Alert.alert(t('tabs.home'), msg);
       setLoading(false);
       return null;
     }
 
     try {
-      // For testing, you can hardcode a location:
-      // const currentLocation = { coords: { latitude: 28.7041, longitude: 77.1025 }, timestamp: Date.now() } as Location.LocationObject;
       let currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation);
       return currentLocation;
     } catch (error) {
-      const msg = t('home.locationError'); // 5. TRANSLATE
+      const msg = t('home.locationError');
       setErrorMsg(msg);
       Alert.alert('Location Error', `${msg} ${t('home.tryAgain')}.`);
       setLoading(false);
       return null;
     }
-  }, [t]); // Add 't' to dependency array
+  }, [t]);
 
-  // --- Data Fetching (MODIFIED FOR PROTOTYPE) ---
+  // --- Data Fetching ---
   const fetchMachines = useCallback(async (currentLocation: Location.LocationObject | null) => {
     if (!currentLocation) {
       setLoading(false);
@@ -62,16 +61,13 @@ export default function HomeScreen() {
     }
     setLoading(true);
 
-    // Simulate a network delay
     await new Promise(resolve => setTimeout(resolve, 500)); 
 
     try {
-      // HARDCODED DATA: Filter mock machines by type and status
       const filteredMachines = MOCK_MACHINES.filter(
         (machine) => machine.type === selectedMachineType && machine.status === 'idle'
       );
       
-      // Simulate distance calculation (random for prototype)
       const machinesWithDistance = filteredMachines.map(m => ({
         ...m,
         distance_km: (Math.random() * 10) + 2 
@@ -85,7 +81,54 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
-  }, [selectedMachineType, t]); // Add 't' to dependency array
+  }, [selectedMachineType, t]);
+
+  // --- Voice Command Handler ---
+  const handleVoiceCommand = useCallback(async () => {
+    setVoiceModalVisible(true);
+    setIsListening(true);
+
+    // Speak greeting
+    Speech.speak("मुझे बताएं, आपको कौन सी मशीन चाहिए?", {
+      language: 'hi-IN',
+      rate: 0.9,
+    });
+
+    // Simulate listening for 3 seconds
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Simulate recognition (in demo, you'll actually say "baler")
+    const recognizedText = "baler"; // Hardcoded for demo
+    
+    setIsListening(false);
+
+    // Process the command
+    if (recognizedText.toLowerCase().includes('baler') || 
+        recognizedText.toLowerCase().includes('बैलर')) {
+      
+      // Speak confirmation
+      Speech.speak("बैलर मशीनें खोज रहा हूं", {
+        language: 'hi-IN',
+        rate: 0.9,
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Set machine type to Baler
+      setSelectedMachineType('Baler');
+      setVoiceModalVisible(false);
+      
+      // Show success message
+      Alert.alert(
+        t('home.voiceSuccess'),
+        t('home.voiceSuccessMsg'),
+        [{ text: 'OK', style: 'default' }]
+      );
+    } else {
+      setVoiceModalVisible(false);
+      Alert.alert(t('home.voice'), t('home.voiceError'));
+    }
+  }, [t]);
 
   // --- Initial Load and Refresh Logic ---
   const onRefresh = useCallback(async () => {
@@ -96,27 +139,37 @@ export default function HomeScreen() {
   }, [getLocation, fetchMachines]);
 
   useEffect(() => {
-    onRefresh(); // Run on initial component mount
+    onRefresh();
   }, []); 
 
   useEffect(() => {
     if(location) { 
         fetchMachines(location);
     }
-  }, [selectedMachineType, fetchMachines]); // Removed 'location' to prevent re-fetch on map move
-
+  }, [selectedMachineType, fetchMachines]);
 
   // --- Render Functions ---
   const renderMachineItem = ({ item }: { item: Machine }) => (
     <Link href={{ pathname: "/booking-modal", params: { machineId: item.machine_id, machineType: item.type } }} asChild>
       <Pressable>
-        <Card style={styles.listItem}>
-          <Card.Title
-            title={item.name || item.type}
-            // 6. TRANSLATE SUBTITLE
-            subtitle={`${t('home.status')}: ${item.status} | ~${item.distance_km?.toFixed(1) ?? t('home.notAvailable')} ${t('home.kmAway')}`}
-            left={(props) => <MaterialCommunityIcons {...props} name="tractor" size={24} color="#6750A4" />}
-          />
+        <Card style={styles.listItem} elevation={1}>
+          <Card.Content>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <MaterialCommunityIcons name="tractor" size={28} color="#4CAF50" />
+              </View>
+              <View style={styles.cardDetails}>
+                <Text style={styles.machineName}>{item.name || item.type}</Text>
+                <View style={styles.statusRow}>
+                  <View style={[styles.statusDot, { backgroundColor: '#4CAF50' }]} />
+                  <Text style={styles.statusText}>{t('home.status')}: {item.status}</Text>
+                </View>
+                <Text style={styles.distanceText}>
+                  📍 ~{item.distance_km?.toFixed(1) ?? t('home.notAvailable')} {t('home.kmAway')}
+                </Text>
+              </View>
+            </View>
+          </Card.Content>
         </Card>
       </Pressable>
     </Link>
@@ -127,18 +180,33 @@ export default function HomeScreen() {
       {/* Header with Filters */}
       <ThemedView style={styles.header}>
         <View style={styles.headerTopRow}>
-          <ThemedText type="title">{t('home.title')}</ThemedText> 
+          <ThemedText type="title" style={styles.headerTitle}>{t('home.welcomeTo')} Krishi</ThemedText>
         </View>
         <SegmentedButtons
             value={viewMode}
             onValueChange={(value) => setViewMode(value as 'map' | 'list')}
             buttons={[
-                { value: 'map', label: t('home.map'), icon: 'map-outline' }, 
-                { value: 'list', label: t('home.list'), icon: 'format-list-bulleted' }, 
+                { 
+                  value: 'map', 
+                  label: t('home.map'), 
+                  icon: 'map-outline',
+                  checkedColor: '#FFFFFF',
+                  uncheckedColor: '#2E7D32',
+                  style: viewMode === 'map' ? styles.segmentedButtonActive : styles.segmentedButton
+                },
+                { 
+                  value: 'list', 
+                  label: t('home.list'), 
+                  icon: 'format-list-bulleted',
+                  checkedColor: '#FFFFFF',
+                  uncheckedColor: '#2E7D32',
+                  style: viewMode === 'list' ? styles.segmentedButtonActive : styles.segmentedButton
+                },
             ]}
             style={styles.viewModeToggle}
         />
       </ThemedView>
+      
       <View style={styles.chipContainer}>
         <FlatList
             data={MACHINE_TYPES}
@@ -148,11 +216,19 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
                 <Chip
                     key={item}
-                    mode="flat"
+                    mode={item === selectedMachineType ? 'flat' : 'outlined'}
                     selected={item === selectedMachineType}
                     onPress={() => setSelectedMachineType(item)}
-                    style={styles.chip}
-                    icon={() => <MaterialCommunityIcons name="tractor-variant" size={18} color={item === selectedMachineType ? 'white' : '#6750A4'} />}
+                    style={[
+                      styles.chip,
+                      item === selectedMachineType && styles.chipSelected
+                    ]}
+                    textStyle={item === selectedMachineType ? styles.chipTextSelected : styles.chipText}
+                    icon={() => <MaterialCommunityIcons 
+                      name="tractor-variant" 
+                      size={18} 
+                      color={item === selectedMachineType ? '#FFFFFF' : '#2E7D32'} 
+                    />}
                 >
                     {item}
                 </Chip>
@@ -164,10 +240,20 @@ export default function HomeScreen() {
       <View style={styles.content}>
         {errorMsg && !loading && (
             <View style={styles.centerMessage}>
-                <ThemedText style={{textAlign: 'center'}}>{errorMsg}</ThemedText>
-                <Button onPress={onRefresh}>{t('home.tryAgain')}</Button> 
+                <MaterialCommunityIcons name="alert-circle-outline" size={64} color="#EF5350" />
+                <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+                <Button 
+                  mode="contained" 
+                  onPress={onRefresh}
+                  buttonColor="#2E7D32"
+                  textColor="#FFFFFF"
+                  style={styles.retryButton}
+                >
+                  {t('home.tryAgain')}
+                </Button>
             </View>
         )}
+        
         {!errorMsg && location && viewMode === 'map' && (
           <MapView
             style={StyleSheet.absoluteFill}
@@ -189,29 +275,54 @@ export default function HomeScreen() {
                     longitude: machine.last_location.longitude,
                   }}
                   title={machine.name || machine.type}
-                  description={`${t('home.status')}: ${machine.status}`} 
-                  onPress={() => router.push({ pathname: "/booking-modal", params: { machineId: machine.machine_id, machineType: machine.type } })}
+                  description={`${t('home.status')}: ${machine.status}`}
+                  onPress={() => router.push({ 
+                    pathname: "/booking-modal", 
+                    params: { machineId: machine.machine_id, machineType: machine.type } 
+                  })}
                 >
                     <View style={styles.markerContainer}>
-                        <MaterialCommunityIcons name="tractor" size={32} color="green" />
+                        <MaterialCommunityIcons name="tractor" size={32} color="#2E7D32" />
                     </View>
                 </Marker>
               ) : null
             )}
           </MapView>
         )}
+        
          {!errorMsg && viewMode === 'list' && (
              <FlatList
                 data={machines}
                 keyExtractor={(item) => item.machine_id}
                 renderItem={renderMachineItem}
-                ListEmptyComponent={!loading ? <View style={styles.centerMessage}><Text>{t('home.noMachines', { machineType: selectedMachineType })}</Text></View> : null} 
-                contentContainerStyle={{ paddingBottom: 80 }}
-                refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}
+                ListEmptyComponent={!loading ? (
+                  <View style={styles.centerMessage}>
+                    <MaterialCommunityIcons name="tractor-variant" size={64} color="#BDBDBD" />
+                    <Text style={styles.emptyText}>
+                      {t('home.noMachinesFound')}
+                    </Text>
+                    <Text style={styles.emptySubtext}>
+                      {t('home.tryDifferentType')}
+                    </Text>
+                  </View>
+                ) : null}
+                contentContainerStyle={{ paddingBottom: 80, paddingTop: 8 }}
+                refreshControl={
+                  <RefreshControl 
+                    refreshing={loading} 
+                    onRefresh={onRefresh}
+                    tintColor="#2E7D32"
+                    colors={["#2E7D32", "#4CAF50"]}
+                  />
+                }
              />
          )}
+         
          {loading && (
-             <ActivityIndicator size="large" style={styles.loadingIndicator} />
+             <View style={styles.loadingOverlay}>
+               <ActivityIndicator size="large" color="#2E7D32" />
+               <Text style={styles.loadingText}>{t('home.findingMachines')}</Text>
+             </View>
          )}
       </View>
 
@@ -219,8 +330,41 @@ export default function HomeScreen() {
        <FAB
          icon="microphone"
          style={styles.fab}
-         onPress={() => Alert.alert(t('home.voiceCommand'), t('home.voiceCommandComingSoon'))} 
+         color="#FFFFFF"
+         onPress={handleVoiceCommand}
+         label={t('home.voice')}
        />
+
+       {/* Voice Command Modal */}
+       <Portal>
+         <Modal
+           visible={voiceModalVisible}
+           onDismiss={() => setVoiceModalVisible(false)}
+           contentContainerStyle={styles.voiceModal}
+         >
+           <View style={styles.voiceModalContent}>
+             <MaterialCommunityIcons 
+               name={isListening ? "microphone" : "check-circle"} 
+               size={80} 
+               color={isListening ? "#F57C00" : "#4CAF50"}
+               style={styles.voiceIcon}
+             />
+             <Text style={styles.voiceModalTitle}>
+               {isListening ? t('home.listening') : t('home.recognized')}
+             </Text>
+             <Text style={styles.voiceModalSubtitle}>
+               {isListening ? t('home.sayMachineName') : t('home.viewMachines')}
+             </Text>
+             {isListening && (
+               <View style={styles.pulseContainer}>
+                 <View style={[styles.pulse, styles.pulse1]} />
+                 <View style={[styles.pulse, styles.pulse2]} />
+                 <View style={[styles.pulse, styles.pulse3]} />
+               </View>
+             )}
+           </View>
+         </Modal>
+       </Portal>
     </View>
   );
 }
@@ -228,69 +372,225 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5F5F5',
   },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 50, // For status bar
-    paddingBottom: 12,
-    backgroundColor: 'white',
+    paddingTop: 50,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee'
+    borderBottomColor: '#E0E0E0',
+    elevation: 2,
   },
   headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  headerTitle: {
+    color: '#2E7D32',
+    fontSize: 24,
+    fontWeight: '700',
   },
   viewModeToggle: {
-    marginTop: 12,
+    marginTop: 4,
+  },
+  segmentedButton: {
+    borderColor: '#2E7D32',
+  },
+  segmentedButtonActive: {
+    backgroundColor: '#2E7D32',
   },
   chipContainer: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#E0E0E0',
   },
   chip: {
     marginRight: 8,
+    borderColor: '#2E7D32',
+  },
+  chipSelected: {
+    backgroundColor: '#2E7D32',
+  },
+  chipText: {
+    color: '#2E7D32',
+  },
+  chipTextSelected: {
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: '#F5F5F5',
   },
   centerMessage: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    marginTop: -100, // Adjust to be more centered
+    padding: 24,
+  },
+  errorText: {
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+    color: '#757575',
+    fontSize: 16,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 16,
+    color: '#757575',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptySubtext: {
+    textAlign: 'center',
+    marginTop: 8,
+    color: '#BDBDBD',
+    fontSize: 14,
+  },
+  retryButton: {
+    marginTop: 8,
+    borderRadius: 8,
   },
   listItem: {
-      marginVertical: 4,
-      marginHorizontal: 8,
-      backgroundColor: 'white',
+    marginVertical: 6,
+    marginHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  cardDetails: {
+    flex: 1,
+  },
+  machineName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#212121',
+    marginBottom: 4,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#757575',
+    textTransform: 'capitalize',
+  },
+  distanceText: {
+    fontSize: 14,
+    color: '#F57C00',
+    fontWeight: '500',
   },
   fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: '#6750A4',
+    backgroundColor: '#F57C00',
   },
   markerContainer: {
-    padding: 5,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 8,
+    borderRadius: 24,
+    backgroundColor: '#E8F5E9',
+    borderWidth: 2,
+    borderColor: '#2E7D32',
   },
-  loadingIndicator: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      justifyContent: 'center',
-      alignItems: 'center',
-  }
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#2E7D32',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  voiceModal: {
+    backgroundColor: '#FFFFFF',
+    padding: 32,
+    margin: 32,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  voiceModalContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  voiceIcon: {
+    marginBottom: 20,
+  },
+  voiceModalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#212121',
+    marginBottom: 8,
+  },
+  voiceModalSubtitle: {
+    fontSize: 16,
+    color: '#757575',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  pulseContainer: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  pulse: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F57C00',
+    opacity: 0.3,
+  },
+  pulse1: {
+    width: 60,
+    height: 60,
+  },
+  pulse2: {
+    width: 80,
+    height: 80,
+    opacity: 0.2,
+  },
+  pulse3: {
+    width: 100,
+    height: 100,
+    opacity: 0.1,
+  },
 });
